@@ -60,9 +60,9 @@ module.exports = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new HtmlWebpackPlugin({
-      template: 'public/index.html',
-      filename: 'index.html',
-    }),
+    // new HtmlWebpackPlugin({
+    //   template: 'public/index.html',
+    //   filename: 'index.html',
+    // }),
   ],
 };

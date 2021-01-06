@@ -2,9 +2,9 @@
 process.env.NODE_ENV = 'production';
 
 const webpack = require('webpack');
-const webpackProdConfig = require('./webpack.prod.config');
+const webpackPagesConfig = require('./webpack.pages.config');
 
-webpack(webpackProdConfig, (err, stats) => {
+webpack(webpackPagesConfig, (err, stats) => {
   if (err || stats.hasErrors()) {
     // 构建过程出错
     console.log('err', err);

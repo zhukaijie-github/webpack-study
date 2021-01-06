@@ -8,14 +8,23 @@ const env = require('../config/dev.env');
 const { assetsPath } = require('./utils');
 const { styleLoaders } = require('./style.loaders');
 const config = require('../config/index');
+// 复制静态资源到打包输出目录
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 // 抽离css
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // 压缩css
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 // 压缩js
 const TerserWebpackPlugin = require('terser-webpack-plugin');
-// 将资源不到成模块，直接引入外部文件 cdn ，比如vue,react
+// 将资源不到成模块，直接引入外部文件 cdn ，比如vue,react,vue-router等
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
+// 性能优化 高大上的可视化分析模块
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
+  .BundleAnalyzerPlugin;
+
+function resolve(dir) {
+  return path.join(__dirname, '..', dir);
+}
 
 const webpackDevConfig = {
   mode: 'production',
@@ -28,6 +37,13 @@ const webpackDevConfig = {
   module: {
     rules: styleLoaders(),
   },
+  resolve: {
+    extensions: ['.js', '.vue', '.json'],
+    alias: {
+      vue$: 'vue/dist/vue.runtime.min.js',
+      '@': resolve('src'),
+    },
+  },
   // 打包会忽略这些，不会打包成模块（一般是用在index.html 引入了外部js）
   // externals: {
   //   // 把导入语句里的 vue 替换成运行环境里的全局变量 vue
@@ -35,6 +51,15 @@ const webpackDevConfig = {
   // },
   plugins: [
     new CleanWebpackPlugin(),
+    // 复制public静态资源
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, '../public'),
+          to: '',
+        },
+      ],
+    }),
     new webpack.DefinePlugin({
       'process.env': env,
     }),
@@ -47,13 +72,15 @@ const webpackDevConfig = {
     new OptimizeCssAssetsPlugin(),
     // 压缩js
     new TerserWebpackPlugin(),
+    // 可视化
+    new BundleAnalyzerPlugin(),
   ],
 };
-
+// 是否配置了externals 引用外部js或者css
 if (config.build.externals && config.build.externals.length > 0) {
   const externals = {};
   config.build.externals.map(item => {
-    externals[item.global] = item.global;
+    externals[item.module] = item.global;
   });
   webpackDevConfig.externals = externals;
   webpackDevConfig.plugins.push(
